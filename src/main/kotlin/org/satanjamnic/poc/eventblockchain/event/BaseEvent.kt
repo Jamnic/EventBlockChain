@@ -6,6 +6,8 @@ class BaseEvent(
         private val type: EventType
 ) : Event {
 
+    constructor(typeName: String) : this(EventType(typeName))
+
     override fun type(): EventType {
         return type
     }
