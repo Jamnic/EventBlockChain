@@ -1,8 +1,8 @@
 package org.satanjamnic.poc.eventblockchain.businessprocess
 
-class BaseBusinessAction(
+class BaseBusinessProcess(
         private val name: String
-) : BusinessAction {
+) : BusinessProcess {
 
     override fun name(): String {
         return name

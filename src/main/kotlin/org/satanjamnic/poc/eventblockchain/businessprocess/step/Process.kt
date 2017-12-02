@@ -1,25 +1,25 @@
 package org.satanjamnic.poc.eventblockchain.businessprocess.step
 
-import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessAction
+import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
 import org.satanjamnic.poc.eventblockchain.event.BaseEvent
 import org.satanjamnic.poc.eventblockchain.event.Event
 import org.satanjamnic.poc.eventblockchain.event.MissingEvent
 import org.satanjamnic.poc.eventblockchain.event.type.EventType
 
 class Process(
-        private val businessAction: BusinessAction,
+        private val businessProcess: BusinessProcess,
         private val consumedEventType: EventType,
         private val producedEventType: EventType
 ) : BusinessProcessStep {
 
     constructor(
-            businessAction: BusinessAction,
+            businessProcess: BusinessProcess,
             consumedEventType: String,
             producedEventType: String
-    ) : this(businessAction, EventType(consumedEventType), EventType(producedEventType))
+    ) : this(businessProcess, EventType(consumedEventType), EventType(producedEventType))
 
-    override fun businessAction(): BusinessAction {
-        return businessAction
+    override fun businessAction(): BusinessProcess {
+        return businessProcess
     }
 
     override fun producedEventType(): EventType {
@@ -27,9 +27,9 @@ class Process(
     }
 
     override fun consumeEventsAndCreateNewEvent(vararg event: Event): Event {
-        println("$businessAction - processed event ${event.fold("", { acc: String, event -> "$event, $acc" })}")
-        return if (event.map { it.type() }.contains(consumedEventType))
-            BaseEvent(producedEventType)
+        val consumedEvent = event.find { it.type() == consumedEventType }
+        return if (consumedEvent != null)
+            BaseEvent(producedEventType, consumedEvent.businessProcessId())
         else
             MissingEvent()
     }

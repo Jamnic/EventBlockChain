@@ -1,22 +1,22 @@
 package org.satanjamnic.poc.eventblockchain.businessprocess.step
 
-import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessAction
+import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
 import org.satanjamnic.poc.eventblockchain.event.Event
 import org.satanjamnic.poc.eventblockchain.event.MissingEvent
 import org.satanjamnic.poc.eventblockchain.event.type.EventType
 
 class Consume(
-        private val businessAction: BusinessAction,
+        private val businessProcess: BusinessProcess,
         private val consumedEvents: List<EventType>
 ) : BusinessProcessStep {
 
     constructor(
-            businessAction: BusinessAction,
+            businessProcess: BusinessProcess,
             vararg consumedEvents: String
-    ) : this(businessAction, consumedEvents.map { EventType(it) })
+    ) : this(businessProcess, consumedEvents.map { EventType(it) })
 
-    override fun businessAction(): BusinessAction {
-        return businessAction
+    override fun businessAction(): BusinessProcess {
+        return businessProcess
     }
 
     // TODO missing event Type or change implementation
@@ -25,7 +25,6 @@ class Consume(
     }
 
     override fun consumeEventsAndCreateNewEvent(vararg event: Event): Event {
-        println("$businessAction - consumed event ${event.fold("", { acc: String, event -> "$$event, $acc" })}")
         return if (event.map { it.type() }.containsAll(consumedEvents))
             MissingEvent()
         else

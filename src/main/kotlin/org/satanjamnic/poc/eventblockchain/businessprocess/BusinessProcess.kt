@@ -1,5 +1,5 @@
 package org.satanjamnic.poc.eventblockchain.businessprocess
 
-interface BusinessAction {
+interface BusinessProcess {
     fun name(): String
 }
