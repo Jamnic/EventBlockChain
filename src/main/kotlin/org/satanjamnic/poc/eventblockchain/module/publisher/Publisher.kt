@@ -7,5 +7,5 @@ interface Publisher {
     // TODO consider using a EventType/EventQueue map
     fun publishesTo(eventQueue: EventQueue)
 
-    fun eventQueueByProcessStep(businessProcessStep: BusinessProcessStep): EventQueue
+    fun findQueueToPublish(businessProcessStep: BusinessProcessStep): EventQueue
 }

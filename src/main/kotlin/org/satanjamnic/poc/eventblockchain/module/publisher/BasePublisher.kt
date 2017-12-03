@@ -12,7 +12,7 @@ class BasePublisher(
         publishesTo.add(eventQueue)
     }
 
-    override fun eventQueueByProcessStep(businessProcessStep: BusinessProcessStep): EventQueue {
+    override fun findQueueToPublish(businessProcessStep: BusinessProcessStep): EventQueue {
         return publishesTo
                 .find { it.publishedEventType() == businessProcessStep.producedEventType() }
                 ?: MissingEventQueue()

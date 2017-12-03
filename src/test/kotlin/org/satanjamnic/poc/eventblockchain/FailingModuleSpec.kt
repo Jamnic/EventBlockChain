@@ -21,47 +21,48 @@ class FailingModuleSpec {
     @Test
     fun shouldNotPublishToEventQueue() {
         // given
-        val process: BusinessProcess = BaseBusinessProcess("Create policy")
+        val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val failingPolicyManagement: Module = FailingModule(
-                "PolicyManagement",
-                listOf(Create(process, "PolicyCreated", BusinessProcessIdFactory())))
+        val moduleA: Module = FailingModule("A",
+                Create(process, "a", BusinessProcessIdFactory()))
 
-        val policyCreatedQueue: EventQueue = BaseEventQueue("PolicyCreated")
-        failingPolicyManagement.publishesTo(policyCreatedQueue)
+        val queueA: EventQueue = BaseEventQueue("PolicyCreated")
+        moduleA.publishesTo(queueA)
 
         // when
-        failingPolicyManagement.process(process)
+        moduleA.process(process)
 
         // then
-        assert(policyCreatedQueue.listEvents().isEmpty())
+        assert(queueA.listEvents().isEmpty())
+        assert(moduleA.listEvents("produced").isEmpty())
     }
 
     @Test
     fun shouldFailToNotifyListeners() {
         // given
-        val process: BusinessProcess = BaseBusinessProcess("Create policy")
+        val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val policyManagement: Module = BaseModule(
-                "PolicyManagement",
-                listOf(Create(process, "PolicyCreated", BusinessProcessIdFactory())))
-        val billing: Module = BaseModule(
-                "Billing",
-                listOf(Process(process, "PolicyCreated", "AccountCreated")))
+        val moduleA: Module = BaseModule("A",
+                Create(process, "a", BusinessProcessIdFactory()))
+        val moduleB: Module = BaseModule("B",
+                Process(process, "a", "b"))
 
-        val failingPolicyCreatedQueue: EventQueue = FailingEventQueue("PolicyCreated")
-        policyManagement.publishesTo(failingPolicyCreatedQueue)
-        failingPolicyCreatedQueue.registerListener(billing)
+        val failingQueueA: EventQueue = FailingEventQueue("a")
+        moduleA.publishesTo(failingQueueA)
+        failingQueueA.registerListener(moduleB)
 
-        val accountCreatedQueue: EventQueue = BaseEventQueue("AccountCreated")
-        billing.publishesTo(accountCreatedQueue)
+        val queueB: EventQueue = BaseEventQueue("b")
+        moduleB.publishesTo(queueB)
 
         // when
-        policyManagement.process(process)
+        moduleA.process(process)
 
         // then
-        assertQueueContains(failingPolicyCreatedQueue, BaseEvent("PolicyCreated", 1))
-        assert(accountCreatedQueue.listEvents().isEmpty())
+        assertQueueContains(failingQueueA, BaseEvent("a", 1))
+
+        assert(queueB.listEvents().isEmpty())
+        assert(moduleB.listEvents("consumed").isEmpty())
+        assert(moduleB.listEvents("produced").isEmpty())
     }
 
     private fun assertQueueContains(eventQueue: EventQueue, event: Event) {

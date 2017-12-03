@@ -8,4 +8,5 @@ import org.satanjamnic.poc.eventblockchain.module.publisher.Publisher
 interface Module : Listener, Publisher {
     fun name(): String
     fun process(businessProcess: BusinessProcess, vararg event: Event)
+    fun listEvents(tableName: String): List<Event>
 }

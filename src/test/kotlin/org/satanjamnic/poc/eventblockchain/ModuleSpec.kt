@@ -18,119 +18,140 @@ class ModuleSpec {
     @Test
     fun shouldCreateEvent() {
         // given
-        val createPolicyBusinessProcess: BusinessProcess = BaseBusinessProcess("create policy")
-
-        val policyManagement: Module = createPolicyManagementModule(createPolicyBusinessProcess)
-
-        val policyCreatedQueue: EventQueue = BaseEventQueue("PolicyCreated")
-        policyManagement.publishesTo(policyCreatedQueue)
+        val process: BusinessProcess = BaseBusinessProcess("First process")
+        val moduleA: Module = BaseModule("A",
+                Create(process, "a", BusinessProcessIdFactory()))
+        val queueA: EventQueue = BaseEventQueue("a")
+        moduleA.publishesTo(queueA)
 
         // when
-        policyManagement.process(createPolicyBusinessProcess)
+        moduleA.process(process)
 
         // then
-        assert(policyCreatedQueue.listEvents().find { it == BaseEvent("PolicyCreated", 1) } != null)
+        val createdEvent = BaseEvent("a", 1)
+
+        assertQueueContains(queueA, createdEvent)
+        assertDatabaseContains(moduleA, "produced", createdEvent)
     }
 
     @Test
     fun shouldProcessCreatedEvent() {
         // given
-        val process: BusinessProcess = BaseBusinessProcess("create policy")
+        val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val policyManagement: Module = createPolicyManagementModule(process)
+        val moduleA: Module = BaseModule("A",
+                Create(process, "a", BusinessProcessIdFactory()))
+        val moduleB: Module = BaseModule("B",
+                Process(process, "a", "b"))
 
-        val billing: Module = createBillingModule(process)
+        val queueA: EventQueue = BaseEventQueue("a")
+        moduleA.publishesTo(queueA)
+        queueA.registerListener(moduleB)
 
-        val policyCreatedQueue: EventQueue = BaseEventQueue("PolicyCreated")
-        policyManagement.publishesTo(policyCreatedQueue)
-        policyCreatedQueue.registerListener(billing)
-
-        val accountCreatedQueue: EventQueue = BaseEventQueue("AccountCreated")
-        billing.publishesTo(accountCreatedQueue)
+        val queueB: EventQueue = BaseEventQueue("b")
+        moduleB.publishesTo(queueB)
 
         // when
-        policyManagement.process(process)
+        moduleA.process(process)
 
         // then
-        assertQueueContains(accountCreatedQueue, BaseEvent("AccountCreated", 1))
+        val consumedEvent = BaseEvent("a", 1)
+        val processedEvent = BaseEvent("b", 1)
+
+        assertQueueContains(queueB, processedEvent)
+        assertDatabaseContains(moduleB, "consumed", consumedEvent)
+        assertDatabaseContains(moduleB, "produced", processedEvent)
     }
 
 
     @Test
     fun shouldPublishToMultipleModules() {
         // given
-        val process: BusinessProcess = BaseBusinessProcess("create policy")
+        val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val policyManagementModule: Module = createPolicyManagementModule(process)
-        val billingModule: Module = createBillingModule(process)
-        val registriesModule: Module = createRegistriesModule(process)
+        val moduleA: Module = BaseModule("A",
+                Create(process, "a", BusinessProcessIdFactory()))
+        val moduleB: Module = BaseModule("B",
+                Process(process, "a", "b"))
+        val moduleC: Module = BaseModule("C",
+                Process(process, "a", "c"))
 
-        val policyCreatedQueue: EventQueue = BaseEventQueue("PolicyCreated")
-        policyCreatedQueue.registerListener(billingModule)
-        policyCreatedQueue.registerListener(registriesModule)
-        policyManagementModule.publishesTo(policyCreatedQueue)
+        val queueA: EventQueue = BaseEventQueue("a")
+        moduleA.publishesTo(queueA)
+        queueA.registerListener(moduleB)
+        queueA.registerListener(moduleC)
 
-        val policyAccountCreatedQueue: EventQueue = BaseEventQueue("AccountCreated")
-        billingModule.publishesTo(policyAccountCreatedQueue)
+        val queueB: EventQueue = BaseEventQueue("b")
+        moduleB.publishesTo(queueB)
 
-        val registryCreatedQueue: EventQueue = BaseEventQueue("RegistryCreated")
-        registriesModule.publishesTo(registryCreatedQueue)
+        val queueC: EventQueue = BaseEventQueue("c")
+        moduleC.publishesTo(queueC)
 
         // when
-        policyManagementModule.process(process)
+        moduleA.process(process)
 
         // then
-        assert(policyCreatedQueue.listEvents().find { it == BaseEvent("PolicyCreated", 1) } != null)
-        assert(policyAccountCreatedQueue.listEvents().find { it == BaseEvent("AccountCreated", 1) } != null)
-        assert(registryCreatedQueue.listEvents().find { it == BaseEvent("RegistryCreated", 1) } != null)
+        val consumedEventA = BaseEvent("a", 1)
+        val producedEventB = BaseEvent("b", 1)
+        val producedEventC = BaseEvent("c", 1)
+
+        assertQueueContains(queueB, producedEventB)
+        assertDatabaseContains(moduleB, "consumed", consumedEventA)
+        assertDatabaseContains(moduleB, "produced", producedEventB)
+
+        assertQueueContains(queueC, producedEventC)
+        assertDatabaseContains(moduleC, "consumed", consumedEventA)
+        assertDatabaseContains(moduleC, "produced", producedEventC)
     }
 
     @Test
     fun shouldNotMixBusinessProcesses() {
         // given
-        val process: BusinessProcess = BaseBusinessProcess("create policy")
+        val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val policyManagementModule: Module = createPolicyManagementModule(process)
+        val moduleA: Module = BaseModule("A",
+                Create(process, "a", BusinessProcessIdFactory()))
+        val moduleB: Module = BaseModule("B",
+                Process(process, "a", "b"))
+        val moduleC: Module = BaseModule("C",
+                Process(process, "a", "c"))
 
-        val billingModule: Module = createBillingModule(process)
+        val queueA: EventQueue = BaseEventQueue("a")
+        moduleA.publishesTo(queueA)
+        queueA.registerListener(moduleB)
+        queueA.registerListener(moduleC)
 
-        val policyCreatedQueue: EventQueue = BaseEventQueue("PolicyCreated")
-        policyCreatedQueue.registerListener(billingModule)
-        policyManagementModule.publishesTo(policyCreatedQueue)
-
-        val policyAccountCreatedQueue: EventQueue = BaseEventQueue("AccountCreated")
-        billingModule.publishesTo(policyAccountCreatedQueue)
+        val queueB: EventQueue = BaseEventQueue("b")
+        moduleB.publishesTo(queueB)
 
         // when
-        policyManagementModule.process(process)
-        policyManagementModule.process(process)
+        moduleA.process(process)
+        moduleA.process(process)
 
         // then
-        assertQueueContains(policyCreatedQueue, BaseEvent("PolicyCreated", 1))
-        assertQueueContains(policyCreatedQueue, BaseEvent("PolicyCreated", 2))
-        assertQueueContains(policyAccountCreatedQueue, BaseEvent("AccountCreated", 1))
-        assertQueueContains(policyAccountCreatedQueue, BaseEvent("AccountCreated", 2))
-    }
+        val consumedEvent1 = BaseEvent("a", 1)
+        val producedEvent1 = BaseEvent("b", 1)
+        val consumedEvent2 = BaseEvent("a", 2)
+        val producedEvent2 = BaseEvent("b", 2)
 
-    private fun createRegistriesModule(process: BusinessProcess): BaseModule {
-        return BaseModule(
-                "Registries",
-                listOf(Process(process, "PolicyCreated", "RegistryCreated")))
-    }
+        assertDatabaseContains(moduleB, "consumed", consumedEvent1)
+        assertDatabaseContains(moduleB, "produced", producedEvent1)
 
-    private fun createBillingModule(process: BusinessProcess): BaseModule {
-        return BaseModule(
-                "Billing",
-                listOf(Process(process, "PolicyCreated", "AccountCreated")))
-    }
+        assertQueueContains(queueA, consumedEvent1)
+        assertQueueContains(queueB, producedEvent1)
 
-    private fun createPolicyManagementModule(process: BusinessProcess): Module {
-        return BaseModule(
-                "PolicyManagement",
-                listOf(Create(process, "PolicyCreated", BusinessProcessIdFactory())))
+        assertDatabaseContains(moduleB, "consumed", consumedEvent2)
+        assertDatabaseContains(moduleB, "produced", producedEvent2)
+
+        assertQueueContains(queueA, consumedEvent2)
+        assertQueueContains(queueB, producedEvent2)
     }
 
     private fun assertQueueContains(eventQueue: EventQueue, event: Event) {
         assert(eventQueue.listEvents().find { it == event } != null)
+    }
+
+    private fun assertDatabaseContains(module: Module, tableName: String, event: Event) {
+        assert(module.listEvents(tableName).find { it == event } != null)
     }
 }

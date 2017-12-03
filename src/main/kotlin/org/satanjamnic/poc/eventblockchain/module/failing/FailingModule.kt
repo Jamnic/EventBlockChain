@@ -7,8 +7,8 @@ import org.satanjamnic.poc.eventblockchain.module.BaseModule
 
 class FailingModule(
         name: String,
-        businessProcessSteps: List<BusinessProcessStep>
-) : BaseModule(name, businessProcessSteps) {
+        vararg businessProcessSteps: BusinessProcessStep
+) : BaseModule(name, *businessProcessSteps) {
 
     override fun process(businessProcess: BusinessProcess, vararg event: Event) {
         // Fail to process events
