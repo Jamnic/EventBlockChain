@@ -16,8 +16,8 @@ class BaseBusinessProcess(
         return name
     }
 
-    override fun expectedResult(): List<EventType> {
-        return expectedResults.toList()
+    override fun validate(eventGroup: List<EventType>): Boolean {
+        return eventGroup.containsAll(expectedResults)
     }
 
     override fun toString(): String {

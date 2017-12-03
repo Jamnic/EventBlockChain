@@ -4,5 +4,5 @@ import org.satanjamnic.poc.eventblockchain.event.type.EventType
 
 interface BusinessProcess {
     fun name(): String
-    fun expectedResult(): List<EventType>
+    fun validate(eventGroup: List<EventType>): Boolean
 }
