@@ -1,8 +1,7 @@
 package org.satanjamnic.poc.eventblockchain.module.miner
 
-import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
-import org.satanjamnic.poc.eventblockchain.event.Event
+import org.satanjamnic.poc.eventblockchain.event.pool.Observer
 
-interface Miner {
-    fun validate(process: BusinessProcess)
+interface Miner : Observer {
+    fun isIdle(): Boolean
 }

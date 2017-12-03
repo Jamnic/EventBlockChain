@@ -6,7 +6,7 @@ class BaseLedger(
         private val blocks: MutableList<List<Event>> = mutableListOf()
 ) : Ledger {
 
-    override fun blocks() : List<List<Event>> {
+    override fun blocks(): List<List<Event>> {
         return blocks
     }
 

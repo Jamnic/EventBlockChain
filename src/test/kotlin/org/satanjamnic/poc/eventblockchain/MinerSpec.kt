@@ -18,14 +18,17 @@ class MinerSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("A to B", "a", "b")
         val eventPool: EventPool = BaseEventPool()
-        val ledger : Ledger = BaseLedger()
-        val miner: Miner = BaseMiner(eventPool, ledger)
+        val ledger: Ledger = BaseLedger()
+        val miner: Miner = BaseMiner(eventPool, ledger, process)
 
-        eventPool += BaseEvent("a", 1)
-        eventPool += BaseEvent("b", 1)
+        eventPool.registerObserver(miner)
 
         // when
-        miner.validate(process)
+        eventPool.addEvent(BaseEvent("a", 1))
+        eventPool.addEvent(BaseEvent("b", 1))
+
+        while (eventPool.isNotEmpty() || !miner.isIdle() ) {
+        }
 
         // then
         assert(ledger.blocks().size == 1)
@@ -36,16 +39,19 @@ class MinerSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("A to B", "a", "b")
         val eventPool: EventPool = BaseEventPool()
-        val ledger : Ledger = BaseLedger()
-        val miner: Miner = BaseMiner(eventPool, ledger)
+        val ledger: Ledger = BaseLedger()
+        val miner: Miner = BaseMiner(eventPool, ledger, process)
 
-        eventPool += BaseEvent("a", 1)
-        eventPool += BaseEvent("b", 1)
-        eventPool += BaseEvent("a", 2)
-        eventPool += BaseEvent("b", 2)
+        eventPool.registerObserver(miner)
 
         // when
-        miner.validate(process)
+        eventPool.addEvent(BaseEvent("a", 1))
+        eventPool.addEvent(BaseEvent("b", 1))
+        eventPool.addEvent(BaseEvent("a", 2))
+        eventPool.addEvent(BaseEvent("b", 2))
+
+        while (eventPool.isNotEmpty() || !miner.isIdle() ) {
+        }
 
         // then
         assert(ledger.blocks().size == 2)
