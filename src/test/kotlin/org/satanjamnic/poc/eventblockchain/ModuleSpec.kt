@@ -125,10 +125,9 @@ class ModuleSpec {
     }
 
     private fun createPolicyManagementModule(process: BusinessProcess): Module {
-        val policyManagement: Module = BaseModule(
+        return BaseModule(
                 "PolicyManagement",
                 listOf(Create(process, "PolicyCreated", BusinessProcessIdFactory())))
-        return policyManagement
     }
 
     private fun assertQueueContains(eventQueue: EventQueue, event: Event) {

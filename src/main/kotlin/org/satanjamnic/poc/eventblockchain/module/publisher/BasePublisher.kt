@@ -1,4 +1,4 @@
-package org.satanjamnic.poc.eventblockchain.module
+package org.satanjamnic.poc.eventblockchain.module.publisher
 
 import org.satanjamnic.poc.eventblockchain.businessprocess.step.BusinessProcessStep
 import org.satanjamnic.poc.eventblockchain.event.queue.EventQueue

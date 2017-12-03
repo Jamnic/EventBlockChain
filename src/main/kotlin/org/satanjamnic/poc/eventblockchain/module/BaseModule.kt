@@ -3,8 +3,10 @@ package org.satanjamnic.poc.eventblockchain.module
 import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
 import org.satanjamnic.poc.eventblockchain.businessprocess.step.BusinessProcessStep
 import org.satanjamnic.poc.eventblockchain.event.Event
+import org.satanjamnic.poc.eventblockchain.module.publisher.BasePublisher
+import org.satanjamnic.poc.eventblockchain.module.publisher.Publisher
 
-class BaseModule(
+open class BaseModule(
         private val name: String,
         private val businessProcessSteps: List<BusinessProcessStep>,
         private val publisher: Publisher = BasePublisher()
