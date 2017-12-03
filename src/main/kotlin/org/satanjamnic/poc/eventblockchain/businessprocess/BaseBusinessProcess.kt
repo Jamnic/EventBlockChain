@@ -1,11 +1,23 @@
 package org.satanjamnic.poc.eventblockchain.businessprocess
 
+import org.satanjamnic.poc.eventblockchain.event.type.EventType
+
 class BaseBusinessProcess(
-        private val name: String
+        private val name: String,
+        private val expectedResults: List<EventType>
 ) : BusinessProcess {
+
+    constructor(
+            name: String,
+            vararg expectedResultsName: String
+    ) : this(name, expectedResultsName.map { EventType(it) })
 
     override fun name(): String {
         return name
+    }
+
+    override fun expectedResult(): List<EventType> {
+        return expectedResults.toList()
     }
 
     override fun toString(): String {
