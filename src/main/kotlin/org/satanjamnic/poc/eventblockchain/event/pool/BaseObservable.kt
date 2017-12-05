@@ -11,4 +11,8 @@ class BaseObservable(
     override fun removeObserver(observer: Observer) {
         this.observers -= observer
     }
+
+    override fun notifyObservers() {
+        observers.forEach { it.beNotified() }
+    }
 }

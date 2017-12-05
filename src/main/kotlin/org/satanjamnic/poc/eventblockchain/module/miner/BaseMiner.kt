@@ -1,6 +1,5 @@
 package org.satanjamnic.poc.eventblockchain.module.miner
 
-import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
 import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
 import org.satanjamnic.poc.eventblockchain.event.Event
@@ -13,31 +12,31 @@ class BaseMiner(
         vararg private val businessProcesses: BusinessProcess
 ) : Miner {
 
-    private var isIdle: Boolean = true
+    private var isFree: Boolean = true
 
-    override fun notifyObserver() {
-        tryToCreateBlock()
+    override fun beNotified() {
+        tryToExecuteTask()
     }
 
-    private fun tryToCreateBlock() {
-        runBlocking {
-            val events = eventPool.list()
-
-            if (isIdle && events.isNotEmpty()) {
-                isIdle = false
-                businessProcesses
-                        .map { async { validateBusinessProcess(it, events) } }
-                        .forEach { it.await() }
-
-                tryToCreateBlock()
+    private fun tryToExecuteTask() {
+        synchronized(this, {
+            runBlocking {
+                if (isFree && eventPool.isNotEmpty()) {
+                    isFree = false
+                    execute()
+                    isFree = true
+                    tryToExecuteTask()
+                }
             }
-
-            isIdle = true
-        }
+        })
     }
 
-    override fun isIdle(): Boolean {
-        return isIdle
+    override fun isFree(): Boolean {
+        return isFree
+    }
+
+    private fun execute() {
+        businessProcesses.forEach { validateBusinessProcess(it, eventPool.list()) }
     }
 
     private fun validateBusinessProcess(process: BusinessProcess, events: List<Event>) {
@@ -53,12 +52,15 @@ class BaseMiner(
     }
 
     private fun validateEventGroup(process: BusinessProcess, eventGroup: List<Event>) {
-        if (process.validate(eventGroup.map { it.type() }))
-            synchronized(eventPool, {
-                if (eventPool.list().containsAll(eventGroup)) {
-                    eventPool.removeEvents(eventGroup)
+        if (process.validate(eventGroup.map { it.type() })) {
+            if (eventPool.list().containsAll(eventGroup)) {
+                if (eventPool.removeAll(eventGroup))
                     ledger.createBlock(eventGroup)
-                }
-            })
+            }
+        }
+    }
+
+    override fun toString(): String {
+        return "${if (isFree) "Idle" else "Busy"} Miner"
     }
 }

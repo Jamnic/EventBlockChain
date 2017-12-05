@@ -11,6 +11,7 @@ class BaseLedger(
     }
 
     override fun createBlock(eventGroup: List<Event>) {
+        println("Ledger creates block of ${eventGroup.size}")
         blocks += eventGroup
     }
 }
