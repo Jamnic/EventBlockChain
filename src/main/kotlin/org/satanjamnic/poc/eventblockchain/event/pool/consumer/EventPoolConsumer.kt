@@ -4,30 +4,40 @@ import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
 import org.satanjamnic.poc.eventblockchain.event.Event
 import org.satanjamnic.poc.eventblockchain.event.pool.EventPool
 import org.satanjamnic.poc.eventblockchain.event.pool.Observer
+import kotlin.concurrent.thread
 
 class EventPoolConsumer(
         private val eventPool: EventPool,
         vararg private val businessProcess: BusinessProcess
 ) : Observer {
 
-    override fun beNotified() {
-        if (eventPool.isNotEmpty()) {
-            eventPool
-                    .map { it.businessProcessId() }
-                    .toSet()
-                    .forEach { id ->
-                        val group = findEventsByProcessId(id)
-                        val process = findProcessMatchingGroup(group)
+    var isBlocked = false
+    var consumed = 0
 
-                        if (process != null) {
-                            eventPool.removeAll(group)
+    override fun beNotified() {
+        if (eventPool.isNotEmpty() && !isBlocked) {
+            isBlocked = true
+            thread {
+                val copiedList = eventPool.list()
+
+                copiedList.map { it.businessProcessId() }
+                        .toSet()
+                        .forEach { id ->
+                            val group = findEventsByProcessId(copiedList, id)
+                            val process = findProcessMatchingGroup(group)
+
+                            if (process != null) {
+                                eventPool.removeAll(group)
+                                consumed += group.size
+                            }
                         }
-                    }
+            }
+            isBlocked = false
         }
     }
 
-    private fun findEventsByProcessId(id: Long): List<Event> {
-        return eventPool
+    private fun findEventsByProcessId(copiedEvents: List<Event>, id: Long): List<Event> {
+        return copiedEvents
                 .filter { it.businessProcessId() == id }
     }
 

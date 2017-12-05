@@ -10,13 +10,23 @@ class BaseEventPool(
         MutableCollection<Event> by events,
         Observable by observable {
 
-    override fun add(element: Event) : Boolean {
+    override fun add(element: Event): Boolean {
         events += element
         observable.notifyObservers()
         return true
     }
 
     override fun list(): List<Event> {
-        return events
+        return ArrayList(events)
+    }
+
+    override fun removeAll(elements: Collection<Event>): Boolean {
+        synchronized(this, {
+            return if (events.containsAll(elements)) {
+                events.removeAll(elements)
+                true
+            } else
+                false
+        })
     }
 }

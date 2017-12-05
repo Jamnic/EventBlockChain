@@ -25,7 +25,45 @@ class MinerSpec {
         eventPool.add(BaseEvent("b", 2))
 
         // then
+        while (eventPool.isNotEmpty() || consumer.isBlocked) {
+        }
+
         assert(eventPool.isEmpty())
+    }
+
+    @Test
+    fun shouldDistributeEventsToTwoConsumers() {
+        // given
+        val process: BusinessProcess = BaseBusinessProcess("A to B", "a", "b")
+        val eventPool: EventPool = BaseEventPool()
+
+        val firstConsumer = EventPoolConsumer(eventPool, process)
+        val secondConsumer = EventPoolConsumer(eventPool, process)
+
+        val consumers = listOf(firstConsumer, secondConsumer)
+
+        eventPool.registerObserver(firstConsumer)
+        eventPool.registerObserver(secondConsumer)
+
+        // when
+        eventPool.add(BaseEvent("a", 1))
+        eventPool.add(BaseEvent("b", 1))
+        eventPool.add(BaseEvent("a", 2))
+        eventPool.add(BaseEvent("b", 2))
+        eventPool.add(BaseEvent("a", 3))
+        eventPool.add(BaseEvent("b", 3))
+        eventPool.add(BaseEvent("a", 4))
+        eventPool.add(BaseEvent("b", 4))
+        eventPool.add(BaseEvent("a", 5))
+        eventPool.add(BaseEvent("b", 5))
+
+        // then
+        while (eventPool.isNotEmpty() || consumers.any { it.isBlocked }) {
+        }
+
+        assert(eventPool.isEmpty())
+        assert(firstConsumer.consumed > 0)
+        assert(secondConsumer.consumed > 0)
     }
 
 //    @Test
