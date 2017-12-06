@@ -1,17 +1,17 @@
 package org.satanjamnic.poc.eventblockchain
 
 import org.junit.Test
-import org.satanjamnic.poc.eventblockchain.businessprocess.BaseBusinessProcess
-import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
-import org.satanjamnic.poc.eventblockchain.businessprocess.factory.BusinessProcessIdFactory
-import org.satanjamnic.poc.eventblockchain.businessprocess.step.Create
-import org.satanjamnic.poc.eventblockchain.businessprocess.step.Process
-import org.satanjamnic.poc.eventblockchain.event.BaseEvent
-import org.satanjamnic.poc.eventblockchain.event.Event
-import org.satanjamnic.poc.eventblockchain.event.queue.BaseEventQueue
-import org.satanjamnic.poc.eventblockchain.event.queue.EventQueue
-import org.satanjamnic.poc.eventblockchain.module.BaseModule
-import org.satanjamnic.poc.eventblockchain.module.Module
+import org.satanjamnic.poc.eventblockchain.common.businessprocess.BaseBusinessProcess
+import org.satanjamnic.poc.eventblockchain.common.businessprocess.BusinessProcess
+import org.satanjamnic.poc.eventblockchain.common.event.BaseEvent
+import org.satanjamnic.poc.eventblockchain.common.event.Event
+import org.satanjamnic.poc.eventblockchain.microservices.businessprocess.factory.BusinessProcessIdFactory
+import org.satanjamnic.poc.eventblockchain.microservices.businessprocess.step.Create
+import org.satanjamnic.poc.eventblockchain.microservices.businessprocess.step.Process
+import org.satanjamnic.poc.eventblockchain.microservices.module.ExistingModule
+import org.satanjamnic.poc.eventblockchain.microservices.module.Module
+import org.satanjamnic.poc.eventblockchain.microservices.queue.EventQueue
+import org.satanjamnic.poc.eventblockchain.microservices.queue.ExistingEventQueue
 
 class ModuleSpec {
 
@@ -19,9 +19,9 @@ class ModuleSpec {
     fun shouldCreateEvent() {
         // given
         val process: BusinessProcess = BaseBusinessProcess("First process")
-        val moduleA: Module = BaseModule("A",
+        val moduleA: Module = ExistingModule("A",
                 Create(process, "a", BusinessProcessIdFactory()))
-        val queueA: EventQueue = BaseEventQueue("a")
+        val queueA: EventQueue = ExistingEventQueue("a")
         moduleA.publishesTo(queueA)
 
         // when
@@ -39,16 +39,16 @@ class ModuleSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val moduleA: Module = BaseModule("A",
+        val moduleA: Module = ExistingModule("A",
                 Create(process, "a", BusinessProcessIdFactory()))
-        val moduleB: Module = BaseModule("B",
+        val moduleB: Module = ExistingModule("B",
                 Process(process, "a", "b"))
 
-        val queueA: EventQueue = BaseEventQueue("a")
+        val queueA: EventQueue = ExistingEventQueue("a")
         moduleA.publishesTo(queueA)
         queueA.registerListener(moduleB)
 
-        val queueB: EventQueue = BaseEventQueue("b")
+        val queueB: EventQueue = ExistingEventQueue("b")
         moduleB.publishesTo(queueB)
 
         // when
@@ -69,22 +69,22 @@ class ModuleSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val moduleA: Module = BaseModule("A",
+        val moduleA: Module = ExistingModule("A",
                 Create(process, "a", BusinessProcessIdFactory()))
-        val moduleB: Module = BaseModule("B",
+        val moduleB: Module = ExistingModule("B",
                 Process(process, "a", "b"))
-        val moduleC: Module = BaseModule("C",
+        val moduleC: Module = ExistingModule("C",
                 Process(process, "a", "c"))
 
-        val queueA: EventQueue = BaseEventQueue("a")
+        val queueA: EventQueue = ExistingEventQueue("a")
         moduleA.publishesTo(queueA)
         queueA.registerListener(moduleB)
         queueA.registerListener(moduleC)
 
-        val queueB: EventQueue = BaseEventQueue("b")
+        val queueB: EventQueue = ExistingEventQueue("b")
         moduleB.publishesTo(queueB)
 
-        val queueC: EventQueue = BaseEventQueue("c")
+        val queueC: EventQueue = ExistingEventQueue("c")
         moduleC.publishesTo(queueC)
 
         // when
@@ -109,19 +109,19 @@ class ModuleSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val moduleA: Module = BaseModule("A",
+        val moduleA: Module = ExistingModule("A",
                 Create(process, "a", BusinessProcessIdFactory()))
-        val moduleB: Module = BaseModule("B",
+        val moduleB: Module = ExistingModule("B",
                 Process(process, "a", "b"))
-        val moduleC: Module = BaseModule("C",
+        val moduleC: Module = ExistingModule("C",
                 Process(process, "a", "c"))
 
-        val queueA: EventQueue = BaseEventQueue("a")
+        val queueA: EventQueue = ExistingEventQueue("a")
         moduleA.publishesTo(queueA)
         queueA.registerListener(moduleB)
         queueA.registerListener(moduleC)
 
-        val queueB: EventQueue = BaseEventQueue("b")
+        val queueB: EventQueue = ExistingEventQueue("b")
         moduleB.publishesTo(queueB)
 
         // when

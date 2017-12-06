@@ -1,12 +1,13 @@
 package org.satanjamnic.poc.eventblockchain
 
 import org.junit.Test
-import org.satanjamnic.poc.eventblockchain.businessprocess.BaseBusinessProcess
-import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
-import org.satanjamnic.poc.eventblockchain.event.BaseEvent
-import org.satanjamnic.poc.eventblockchain.event.pool.BaseEventPool
-import org.satanjamnic.poc.eventblockchain.event.pool.EventPool
-import org.satanjamnic.poc.eventblockchain.event.pool.consumer.EventPoolConsumer
+import org.satanjamnic.poc.eventblockchain.blockchain.eventpool.BaseEventPool
+import org.satanjamnic.poc.eventblockchain.blockchain.eventpool.EventPool
+import org.satanjamnic.poc.eventblockchain.blockchain.eventpool.consumer.EventPoolConsumer
+import org.satanjamnic.poc.eventblockchain.blockchain.eventpool.consumer.Miner
+import org.satanjamnic.poc.eventblockchain.common.businessprocess.BaseBusinessProcess
+import org.satanjamnic.poc.eventblockchain.common.businessprocess.BusinessProcess
+import org.satanjamnic.poc.eventblockchain.common.event.BaseEvent
 
 class MinerSpec {
 
@@ -15,7 +16,7 @@ class MinerSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("A to B", "a", "b")
         val eventPool: EventPool = BaseEventPool()
-        val consumer = EventPoolConsumer(eventPool, process)
+        val consumer: EventPoolConsumer = Miner(eventPool, process)
         eventPool.registerObserver(consumer)
 
         // when
@@ -25,7 +26,7 @@ class MinerSpec {
         eventPool.add(BaseEvent("b", 2))
 
         // then
-        while (eventPool.isNotEmpty() || consumer.isBlocked) {
+        while (eventPool.isNotEmpty() || consumer.isBlocked()) {
         }
 
         assert(eventPool.isEmpty())
@@ -37,8 +38,8 @@ class MinerSpec {
         val process: BusinessProcess = BaseBusinessProcess("A to B", "a", "b")
         val eventPool: EventPool = BaseEventPool()
 
-        val firstConsumer = EventPoolConsumer(eventPool, process)
-        val secondConsumer = EventPoolConsumer(eventPool, process)
+        val firstConsumer: EventPoolConsumer = Miner(eventPool, process)
+        val secondConsumer: EventPoolConsumer = Miner(eventPool, process)
 
         val consumers = listOf(firstConsumer, secondConsumer)
 
@@ -58,12 +59,12 @@ class MinerSpec {
         eventPool.add(BaseEvent("b", 5))
 
         // then
-        while (eventPool.isNotEmpty() || consumers.any { it.isBlocked }) {
+        while (eventPool.isNotEmpty() || consumers.any { it.isBlocked() }) {
         }
 
         assert(eventPool.isEmpty())
-        assert(firstConsumer.consumed > 0)
-        assert(secondConsumer.consumed > 0)
+        assert(firstConsumer.consumed() > 0)
+        assert(secondConsumer.consumed() > 0)
     }
 
 //    @Test

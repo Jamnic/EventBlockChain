@@ -1,19 +1,19 @@
 package org.satanjamnic.poc.eventblockchain
 
 import org.junit.Test
-import org.satanjamnic.poc.eventblockchain.businessprocess.BaseBusinessProcess
-import org.satanjamnic.poc.eventblockchain.businessprocess.BusinessProcess
-import org.satanjamnic.poc.eventblockchain.businessprocess.factory.BusinessProcessIdFactory
-import org.satanjamnic.poc.eventblockchain.businessprocess.step.Create
-import org.satanjamnic.poc.eventblockchain.businessprocess.step.Process
-import org.satanjamnic.poc.eventblockchain.event.BaseEvent
-import org.satanjamnic.poc.eventblockchain.event.Event
-import org.satanjamnic.poc.eventblockchain.event.queue.BaseEventQueue
-import org.satanjamnic.poc.eventblockchain.event.queue.EventQueue
-import org.satanjamnic.poc.eventblockchain.event.queue.failing.FailingEventQueue
-import org.satanjamnic.poc.eventblockchain.module.BaseModule
-import org.satanjamnic.poc.eventblockchain.module.Module
-import org.satanjamnic.poc.eventblockchain.module.failing.FailingModule
+import org.satanjamnic.poc.eventblockchain.common.businessprocess.BaseBusinessProcess
+import org.satanjamnic.poc.eventblockchain.common.businessprocess.BusinessProcess
+import org.satanjamnic.poc.eventblockchain.common.event.BaseEvent
+import org.satanjamnic.poc.eventblockchain.common.event.Event
+import org.satanjamnic.poc.eventblockchain.microservices.businessprocess.factory.BusinessProcessIdFactory
+import org.satanjamnic.poc.eventblockchain.microservices.businessprocess.step.Create
+import org.satanjamnic.poc.eventblockchain.microservices.businessprocess.step.Process
+import org.satanjamnic.poc.eventblockchain.microservices.module.ExistingModule
+import org.satanjamnic.poc.eventblockchain.microservices.module.FailingModule
+import org.satanjamnic.poc.eventblockchain.microservices.module.Module
+import org.satanjamnic.poc.eventblockchain.microservices.queue.EventQueue
+import org.satanjamnic.poc.eventblockchain.microservices.queue.ExistingEventQueue
+import org.satanjamnic.poc.eventblockchain.microservices.queue.FailingEventQueue
 
 class FailingModuleSpec {
 
@@ -26,7 +26,7 @@ class FailingModuleSpec {
         val moduleA: Module = FailingModule("A",
                 Create(process, "a", BusinessProcessIdFactory()))
 
-        val queueA: EventQueue = BaseEventQueue("PolicyCreated")
+        val queueA: EventQueue = ExistingEventQueue("PolicyCreated")
         moduleA.publishesTo(queueA)
 
         // when
@@ -42,16 +42,16 @@ class FailingModuleSpec {
         // given
         val process: BusinessProcess = BaseBusinessProcess("First process")
 
-        val moduleA: Module = BaseModule("A",
+        val moduleA: Module = ExistingModule("A",
                 Create(process, "a", BusinessProcessIdFactory()))
-        val moduleB: Module = BaseModule("B",
+        val moduleB: Module = ExistingModule("B",
                 Process(process, "a", "b"))
 
         val failingQueueA: EventQueue = FailingEventQueue("a")
         moduleA.publishesTo(failingQueueA)
         failingQueueA.registerListener(moduleB)
 
-        val queueB: EventQueue = BaseEventQueue("b")
+        val queueB: EventQueue = ExistingEventQueue("b")
         moduleB.publishesTo(queueB)
 
         // when
